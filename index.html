@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CPU Usage Monitor</title>
+    <script>
+        
+        let defBackgroundColor = 'red';
+        let timeout = 250
+
+        function ConnectWebsocket(){
+            let ws = new WebSocket("ws://localhost:8080/ws");
+            ws.onmessage = function(event) {
+                // reset error
+                timeout = 250;
+                document.getElementById("error").innerText = "";
+                
+
+                var cpuPercent = parseFloat(event.data).toFixed(2);
+                document.getElementById("cpu-usage").innerText = `CPU Usage: ${cpuPercent}%`;
+
+                backgroundColor = defBackgroundColor;
+                if (cpuPercent < 70 ) {
+                    backgroundColor = 'green';
+                }
+                document.body.style.background = backgroundColor;
+            };
+
+            ws.onclose = function(event) {
+                document.body.style.background = defBackgroundColor;
+                
+                console.log('Socket is closed. Reconnect will be attempted.', event.reason);
+                document.getElementById("error").innerHTML = "<b>Server Connection lost<b>";
+                document.getElementById("cpu-usage").innerText = `CPU Usage: ${""}%`;
+                
+                setTimeout(function(){
+                    /*alert("connection to server lost"); */
+                    ConnectWebsocket();},Math.min(60000,timeout+=timeout)
+                    );
+            }
+
+            ws.onerror = function(err) {
+                console.error('Socket encountered error: ', err.message, 'Closing socket');
+                ws.close();
+            };
+        };
+        ConnectWebsocket();
+    </script>
+</head>
+<body>
+    <h1>CPU Usage Monitor</h1>
+    <p id="cpu-usage">CPU Usage: Loading...</p>
+    <p id="error"></p>
+</body>
+</html>
