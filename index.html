@@ -2,13 +2,14 @@
 <html>
 <head>
     <title>CPU Usage Monitor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
         
         let defBackgroundColor = 'red';
         let timeout = 250
 
         function ConnectWebsocket(){
-            let ws = new WebSocket("ws://localhost:8080/ws");
+            let ws = new WebSocket(`ws://${location.host}/ws`);
             ws.onmessage = function(event) {
                 // reset error
                 timeout = 250;
